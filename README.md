@@ -12,7 +12,7 @@ to better fit modern technical requirements.
 [Payload: N bytes]    // Client payload, immediately following the request header
 ```
 
-Currently, password hash (balake3) is used for authentication.
+Currently, password hash (blake3) is used for authentication.
 The fields are similar to SOCKS5, but the order is slightly different.
 For a UDP ASSOCIATE request, each UDP datagram is encoded as follows:
 
@@ -24,4 +24,4 @@ For a UDP ASSOCIATE request, each UDP datagram is encoded as follows:
 [Payload: N bytes]
 ```
 
-
+The protocol was developed for the sing-box ecosystem.
