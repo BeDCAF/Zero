@@ -22,7 +22,7 @@ For a UDP ASSOCIATE request, each UDP datagram is encoded as follows:
 [Payload: N bytes]
 ```
 
-The ZERO Protocol Specification is available under the [ZERO Protocol License](ZeroProtocolLicense.md).
+The ZERO Protocol Specification is available under the [ZERO Protocol License](ZeroProtocolLicense).
 
 This license applies only to the protocol specification and related documentation.
 It does not apply to software implementations of the protocol.
