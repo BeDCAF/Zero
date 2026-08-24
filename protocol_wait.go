@@ -2,6 +2,7 @@ package zero
 
 import (
 	"encoding/binary"
+	"io"
 
 	"github.com/sagernet/sing/common/buf"
 	E "github.com/sagernet/sing/common/exceptions"
@@ -17,11 +18,12 @@ func (c *ClientPacketConn) InitializeReadWaiter(options N.ReadWaitOptions) (need
 }
 
 func (c *ClientPacketConn) WaitReadPacket() (buffer *buf.Buffer, destination M.Socksaddr, err error) {
-	var length uint16
-	err = binary.Read(c.Conn, binary.BigEndian, &length)
+	var lengthBuf [2]byte
+	_, err = io.ReadFull(c.Conn, lengthBuf[:])
 	if err != nil {
 		return nil, M.Socksaddr{}, E.Cause(err, "read chunk length")
 	}
+	length := binary.BigEndian.Uint16(lengthBuf[:])
 
 	port, err := M.SocksaddrSerializer.ReadPort(c.Conn)
 	if err != nil {

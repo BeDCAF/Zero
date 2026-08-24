@@ -2,6 +2,7 @@ package zero
 
 import (
 	"encoding/binary"
+	"io"
 	"net"
 	"os"
 	"sync"
@@ -274,11 +275,12 @@ func ClientHandshakePacket(conn net.Conn, key [KeyLength]byte, destination M.Soc
 }
 
 func ReadPacket(conn net.Conn, buffer *buf.Buffer) (M.Socksaddr, error) {
-	var length uint16
-	err := binary.Read(conn, binary.BigEndian, &length)
+	var lengthBuf [2]byte
+	_, err := io.ReadFull(conn, lengthBuf[:])
 	if err != nil {
 		return M.Socksaddr{}, E.Cause(err, "read chunk length")
 	}
+	length := binary.BigEndian.Uint16(lengthBuf[:])
 
 	port, err := M.SocksaddrSerializer.ReadPort(conn)
 	if err != nil {

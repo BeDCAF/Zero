@@ -2,9 +2,9 @@ package zero
 
 import (
 	"context"
-	"encoding/binary"
 	"io"
 	"net"
+
 	"github.com/sagernet/sing/common/auth"
 	"github.com/sagernet/sing/common/buf"
 	"github.com/sagernet/sing/common/bufio"
@@ -71,11 +71,12 @@ func (s *Service[K]) NewConnection(ctx context.Context, conn net.Conn, source M.
 		return s.fallback(ctx, conn, source, key[:], E.New("bad request"), onClose)
 	}
 
-	var command byte
-	err = binary.Read(conn, binary.BigEndian, &command)
+	var commandBuf [1]byte
+	_, err = io.ReadFull(conn, commandBuf[:])
 	if err != nil {
 		return E.Cause(err, "read command")
 	}
+	command := commandBuf[0]
 
 	switch command {
 	case CommandTCP, CommandUDP, CommandMux:
