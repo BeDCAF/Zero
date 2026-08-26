@@ -1,0 +1,28 @@
+Copyright (c) 2026 BeDCAF
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of the ZERO Protocol Specification and associated protocol documentation
+(the "Specification"), to use, reproduce, modify, publish, distribute,
+sublicense, and/or sell copies of the Specification, and to permit persons
+to whom the Specification is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Specification.
+
+THE SPECIFICATION IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SPECIFICATION
+OR THE USE OR OTHER DEALINGS IN THE SPECIFICATION.
+
+This license applies only to the ZERO Protocol Specification and related
+protocol documentation. It does not grant any license or other permission
+to any software implementation of the protocol, including source code,
+object code, libraries, or other software distributed by the ZERO project.
+
+Software implementations of the ZERO Protocol are licensed separately
+under their applicable licenses. Nothing in this license is intended to
+change, limit, or supersede the license applicable to any such software.

@@ -18,17 +18,23 @@ func (c *PacketConn) InitializeReadWaiter(options N.ReadWaitOptions) (needCopy b
 }
 
 func (c *PacketConn) WaitReadPacket() (buffer *buf.Buffer, destination M.Socksaddr, err error) {
-	destination, err = M.SocksaddrSerializer.ReadAddrPort(c.Conn)
-	if err != nil {
-		return nil, M.Socksaddr{}, E.Cause(err, "read addr")
-	}
-
 	var lengthBuf [2]byte
 	_, err = io.ReadFull(c.Conn, lengthBuf[:])
 	if err != nil {
 		return nil, M.Socksaddr{}, E.Cause(err, "read chunk length")
 	}
 	length := binary.BigEndian.Uint16(lengthBuf[:])
+
+	port, err := M.SocksaddrSerializer.ReadPort(c.Conn)
+	if err != nil {
+		return nil, M.Socksaddr{}, E.Cause(err, "read port")
+	}
+
+	destination, err = M.SocksaddrSerializer.ReadAddress(c.Conn)
+	if err != nil {
+		return nil, M.Socksaddr{}, E.Cause(err, "read addr")
+	}
+	destination.Port = port
 
 	buffer = c.readWaitOptions.NewPacketBuffer()
 	_, err = buffer.ReadFullFrom(c.Conn, int(length))

@@ -83,11 +83,16 @@ func (s *Service[K]) NewConnection(ctx context.Context, conn net.Conn, source M.
 	default:
 		return E.New("unknown command ", command)
 	}
-
-	destination, err := M.SocksaddrSerializer.ReadAddrPort(conn)
+	port, err := M.SocksaddrSerializer.ReadPort(conn)
 	if err != nil {
-		return E.Cause(err, "read addr+port")
+		return E.Cause(err, "read port")
 	}
+
+	destination, err := M.SocksaddrSerializer.ReadAddress(conn)
+	if err != nil {
+		return E.Cause(err, "read address")
+	}
+	destination.Port = port
 
 	switch command {
 	case CommandTCP:
@@ -123,7 +128,7 @@ func (c *PacketConn) WritePacket(buffer *buf.Buffer, destination M.Socksaddr) er
 }
 
 func (c *PacketConn) FrontHeadroom() int {
-	return M.MaxSocksaddrLength + 2 + 2
+	return M.MaxSocksaddrLength + 4
 }
 
 func (c *PacketConn) NeedAdditionalReadDeadline() bool {

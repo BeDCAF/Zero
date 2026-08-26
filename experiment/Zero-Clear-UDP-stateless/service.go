@@ -86,7 +86,7 @@ func (s *Service[K]) NewConnection(ctx context.Context, conn net.Conn, source M.
 
 	destination, err := M.SocksaddrSerializer.ReadAddrPort(conn)
 	if err != nil {
-		return E.Cause(err, "read addr+port")
+		return E.Cause(err, "read address")
 	}
 
 	switch command {
@@ -123,7 +123,7 @@ func (c *PacketConn) WritePacket(buffer *buf.Buffer, destination M.Socksaddr) er
 }
 
 func (c *PacketConn) FrontHeadroom() int {
-	return M.MaxSocksaddrLength + 2 + 2
+	return M.MaxSocksaddrLength + 4 + KeyLength + 1
 }
 
 func (c *PacketConn) NeedAdditionalReadDeadline() bool {

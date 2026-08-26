@@ -10,8 +10,7 @@ to better fit modern technical requirements:
 [Payload: N bytes]    // Client payload, immediately following the request header
 ```
 
-Currently, password hash (blake3) is used for authentication, but you can accept any 16-byte key.
-If the command specifies a UDP Associate, then a payload length field is added after the port:
+If the command specifies a UDP, then a payload length field is added after the port:
 
 ```
 [ATYP: 1 byte]        // Address type (IPv4: 0x01; DOMAIN: 0x03; IPv6: 0x04)
@@ -21,6 +20,7 @@ If the command specifies a UDP Associate, then a payload length field is added a
 [Payload: N bytes]    // Client payload, immediately following the request header
 ```
 
+Currently, password hash (blake3) is used for authentication, but you can accept any 16-byte key.
 The ZERO Protocol Specification is available under the [ZERO Protocol License](ZEROProtocolLicense).
 
 This license applies only to the protocol specification and related documentation.

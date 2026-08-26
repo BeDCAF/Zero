@@ -10,17 +10,17 @@ import (
 	N "github.com/sagernet/sing/common/network"
 )
 
-var _ N.PacketReadWaiter = (*PacketConn)(nil)
+var _ N.PacketReadWaiter = (*ClientPacketConn)(nil)
 
-func (c *PacketConn) InitializeReadWaiter(options N.ReadWaitOptions) (needCopy bool) {
+func (c *ClientPacketConn) InitializeReadWaiter(options N.ReadWaitOptions) (needCopy bool) {
 	c.readWaitOptions = options
 	return false
 }
 
-func (c *PacketConn) WaitReadPacket() (buffer *buf.Buffer, destination M.Socksaddr, err error) {
+func (c *ClientPacketConn) WaitReadPacket() (buffer *buf.Buffer, destination M.Socksaddr, err error) {
 	destination, err = M.SocksaddrSerializer.ReadAddrPort(c.Conn)
 	if err != nil {
-		return nil, M.Socksaddr{}, E.Cause(err, "read addr")
+		return nil, M.Socksaddr{}, E.Cause(err, "read destination")
 	}
 
 	var lengthBuf [2]byte
@@ -34,8 +34,8 @@ func (c *PacketConn) WaitReadPacket() (buffer *buf.Buffer, destination M.Socksad
 	_, err = buffer.ReadFullFrom(c.Conn, int(length))
 	if err != nil {
 		buffer.Release()
-		return
+		return nil, M.Socksaddr{}, err
 	}
 	c.readWaitOptions.PostReturn(buffer)
-	return
+	return buffer, destination, nil
 }

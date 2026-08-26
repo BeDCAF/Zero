@@ -54,12 +54,15 @@ func newMuxConnection0(ctx context.Context, conn net.Conn, source M.Socksaddr, h
 	if err != nil {
 		return E.Cause(err, "read command")
 	}
-
-	destination, err := M.SocksaddrSerializer.ReadAddrPort(reader)
+	port, err := M.SocksaddrSerializer.ReadPort(reader)
 	if err != nil {
-		return E.Cause(err, "read addr+port")
+		return E.Cause(err, "read port")
 	}
-
+	destination, err := M.SocksaddrSerializer.ReadAddress(reader)
+	if err != nil {
+		return E.Cause(err, "read addr")
+	}
+	destination.Port = port
 	if reader.Buffered() > 0 {
 		buffer := buf.NewSize(reader.Buffered())
 		_, err = buffer.ReadFullFrom(reader, buffer.Len())
