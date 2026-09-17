@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 
+	singmux "github.com/sagernet/sing-mux"
 	"github.com/sagernet/sing/common/auth"
 	"github.com/sagernet/sing/common/buf"
 	"github.com/sagernet/sing/common/bufio"
@@ -12,6 +13,7 @@ import (
 	"github.com/sagernet/sing/common/logger"
 	M "github.com/sagernet/sing/common/metadata"
 	N "github.com/sagernet/sing/common/network"
+	"github.com/sagernet/sing/common/uot"
 )
 
 type Handler interface {
@@ -60,11 +62,10 @@ func (s *Service[K]) UpdateUsers(userList []K, passwordList []string) error {
 
 func (s *Service[K]) NewConnection(ctx context.Context, conn net.Conn, source M.Socksaddr, onClose N.CloseHandlerFunc) error {
 	var key [KeyLength]byte
-	_, err := io.ReadFull(conn, key[:])
+	n, err := io.ReadFull(conn, key[:])
 	if err != nil {
-		return s.fallback(ctx, conn, source, key[:], err, onClose)
+		return s.fallback(ctx, conn, source, key[:n], err, onClose)
 	}
-
 	if user, loaded := s.keys[key]; loaded {
 		ctx = auth.ContextWithUser(ctx, user)
 	} else {
@@ -72,17 +73,10 @@ func (s *Service[K]) NewConnection(ctx context.Context, conn net.Conn, source M.
 	}
 
 	var commandBuf [1]byte
-	_, err = io.ReadFull(conn, commandBuf[:])
-	if err != nil {
+	if _, err = io.ReadFull(conn, commandBuf[:]); err != nil {
 		return E.Cause(err, "read command")
 	}
 	command := commandBuf[0]
-
-	switch command {
-	case CommandTCP, CommandUDP, CommandMux:
-	default:
-		return E.New("unknown command ", command)
-	}
 
 	destination, err := M.SocksaddrSerializer.ReadAddrPort(conn)
 	if err != nil {
@@ -93,9 +87,24 @@ func (s *Service[K]) NewConnection(ctx context.Context, conn net.Conn, source M.
 	case CommandTCP:
 		s.handler.NewConnectionEx(ctx, conn, source, destination, onClose)
 	case CommandUDP:
-		s.handler.NewPacketConnectionEx(ctx, &PacketConn{Conn: conn}, source, destination, onClose)
+		if destination.IsDomain() && destination.Fqdn == uot.MagicAddress {
+			request, err := uot.ReadRequest(conn)
+			if err != nil {
+				return E.Cause(err, "read UoT request")
+			}
+			uotConn := uot.NewConn(conn, *request)
+			s.handler.NewPacketConnectionEx(ctx, uotConn, source, request.Destination, onClose)
+		} else {
+			s.handler.NewPacketConnectionEx(ctx, &PacketConn{Conn: conn}, source, destination, onClose)
+		}
+	case CommandMux:
+		if destination.IsDomain() && destination.Fqdn == singmux.Destination.Fqdn {
+			s.handler.NewConnectionEx(ctx, conn, source, destination, onClose)
+		} else {
+			return HandleMuxConnection(ctx, conn, source, s.handler, s.logger, onClose)
+		}
 	default:
-		return HandleMuxConnection(ctx, conn, source, s.handler, s.logger, onClose)
+		return E.New("unknown command ", command)
 	}
 	return nil
 }
@@ -123,7 +132,7 @@ func (c *PacketConn) WritePacket(buffer *buf.Buffer, destination M.Socksaddr) er
 }
 
 func (c *PacketConn) FrontHeadroom() int {
-	return M.MaxSocksaddrLength + 2 + 2
+	return M.MaxSocksaddrLength + 2
 }
 
 func (c *PacketConn) NeedAdditionalReadDeadline() bool {

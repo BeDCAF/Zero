@@ -45,6 +45,7 @@ func newMuxConnection(ctx context.Context, conn net.Conn, source M.Socksaddr, ha
 	err := newMuxConnection0(ctx, conn, source, handler)
 	if err != nil {
 		logger.ErrorContext(ctx, E.Cause(err, "process ZERO multiplex connection"))
+		conn.Close()
 	}
 }
 
